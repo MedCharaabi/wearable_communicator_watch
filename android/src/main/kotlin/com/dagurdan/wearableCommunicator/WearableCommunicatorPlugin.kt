@@ -51,6 +51,21 @@ public class WearableCommunicatorPlugin: FlutterPlugin, MethodCallHandler, Activ
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+
+     Log.d(TAG, "onMethodCall: ${call.method}")
+
+     if(call.method == "listenForMessages"){
+        try {
+            val id = call.arguments<Int>()
+            if (id != null) {
+                messageListenerIds.add(id)
+            }
+        } catch (ex: Exception) {
+        
+            Log.e(TAG, ex.localizedMessage, ex)
+        }
+     }
+
     when (call.method) {
         "getPlatformVersion" -> {
           result.success("Android ${android.os.Build.VERSION.RELEASE}")
@@ -63,6 +78,10 @@ public class WearableCommunicatorPlugin: FlutterPlugin, MethodCallHandler, Activ
         }
         "listenMessages" -> {
             registerMessageListener(call)
+            result.success(null)
+        }
+        "listenForMessages" ->{
+             registerMessageListener(call)
             result.success(null)
         }
         "listenData" -> {
@@ -81,6 +100,7 @@ public class WearableCommunicatorPlugin: FlutterPlugin, MethodCallHandler, Activ
                 messageListenerIds.add(id)
             }
         } catch (ex: Exception) {
+        
             Log.e(TAG, ex.localizedMessage, ex)
         }
     }
@@ -105,9 +125,14 @@ public class WearableCommunicatorPlugin: FlutterPlugin, MethodCallHandler, Activ
                 val client = Wearable.getMessageClient(activity!!)
                 Wearable.getNodeClient(activity!!).connectedNodes.addOnSuccessListener { nodes ->
                     nodes.forEach { node ->
-                        val json = JSONObject(argument).toString()
-                        client.sendMessage(node.id, "/MessageChannel", json.toByteArray()).addOnSuccessListener {
-                            Log.d(TAG,"sent message: $json to ${node.displayName}")
+                        // val json = JSONObject(argument).toString()
+                        val testpayload: ByteArray = "HO la".toByteArray()
+                        client.sendMessage(node.id, "/MessageChannel", 
+                        testpayload
+                        // json.toByteArray()
+                        
+                        ).addOnSuccessListener {
+                            Log.d(TAG,"sent message: hola to ${node.displayName}")
                         }
                     }
                     result.success(null)

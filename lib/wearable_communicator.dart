@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-
+import 'dart:developer';
 
 /// Static class to send messages and data to wearables
 class WearableCommunicator {
-  static const MethodChannel _channel = const MethodChannel('wearableCommunicator');
+  static const MethodChannel _channel =
+      const MethodChannel('wearableCommunicator');
 
   /// send message to watch
   /// the message must conform to https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html
@@ -25,7 +26,6 @@ class WearableCommunicator {
     await _channel.invokeListMethod('setData', {"path": path, "data": data});
   }
 }
-
 
 /// typedef for listener callbacks
 typedef void MultiUseCallback(dynamic msg);
@@ -80,7 +80,9 @@ class WearableListener {
     _channel.setMethodCallHandler(_methodCallHandler);
     int currentListenerId = _nextCallbackId++;
     _messageCallbacksById[currentListenerId] = callback;
-    await _channel.invokeMethod("listenMessages", currentListenerId);
+    log("current listener id: " + currentListenerId.toString());
+    await _channel.invokeMethod('listenForMessages', currentListenerId);
+    // await _channel.invokeMethod("listenMessages", currentListenerId);
     return () {
       _channel.invokeMethod("cancelListeningMessages", currentListenerId);
       _messageCallbacksById.remove(currentListenerId);
